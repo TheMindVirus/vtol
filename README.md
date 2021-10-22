@@ -29,4 +29,5 @@ for a more direct connection, but this would have a mild impact on capture perfo
 
 Please feel free to customise the Unity Scripts to suit your application
 and extend it to whichever proprietary or non-proprietary equipment you may have.
+ToDo: Amplify the colour values based on amplitude of HDMI-encoded audio samples...
 ```
