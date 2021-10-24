@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Video To Light</title>
+    <script>
+      var vtol = [0, 0, 0];
+      var video_processor = null;
+      var video_input = null;
+      var video_sample = null;
+      var canvas = null;
+      var ctx = null;
+
+      window.onload = async function()
+      {
+          canvas = document.getElementById("canvas");
+          ctx = canvas.getContext("2d");
+          await navigator.mediaDevices.getUserMedia({ audio: false, video: true }).then(CaptureLoad).catch(CaptureError);
+      }
+
+      var CaptureLoad = function(capture)
+      {
+          var tracks = capture.getTracks();
+          for (var i in tracks)
+          {
+              if (tracks[i].kind == "video")
+              {
+                  video_processor = new MediaStreamTrackProcessor(tracks[i]);
+                  video_input = video_processor.readable.getReader();
+                  setInterval(() => { video_input.read().then(CaptureVideo); }, 0);
+                  break;
+              }
+          }
+      }
+
+      var CaptureVideo = function({ done, value })
+      {
+          try
+          {
+              canvas.width = value.displayWidth;
+              canvas.height = value.displayHeight;
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(value, 0, 0);
+              video_sample = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data;
+              vtol = [video_sample[0], video_sample[1], video_sample[2]];
+              document.title = vtol; console.log(vtol);
+          }
+          catch (e) { CaptureError(e); }
+          value.close();
+      }
+
+      var CaptureError = function(error) { console.log(error); }
+    </script>
+    <style>
+      * { box-sizing: border-box; margin: auto; overflow: hidden; }
+      body { background: black; }
+      #canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+  </body>
+</html>
